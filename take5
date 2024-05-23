@@ -1,0 +1,43 @@
+import os
+from pydub import AudioSegment
+import librosa
+import pretty_midi
+import numpy as np
+
+# Fix for numpy complex type
+np.complex = np.complex128
+
+# Step 1: Convert MP3 to WAV
+def convert_mp3_to_wav(mp3_path, wav_path):
+    audio = AudioSegment.from_mp3(mp3_path)
+    audio.export(wav_path, format='wav')
+
+# Step 2: Transcribe WAV to MIDI
+def transcribe_audio_to_midi(wav_path, midi_path):
+    y, sr = librosa.load(wav_path)
+    onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+    tempo, beats = librosa.beat.beat_track(onset_envelope=onset_env, sr=sr)
+
+    # Create a PrettyMIDI object
+    midi = pretty_midi.PrettyMIDI()
+    instrument = pretty_midi.Instrument(program=0)
+
+    # Add notes to the instrument
+    for i, beat in enumerate(beats):
+        start_time = librosa.frames_to_time(beat, sr=sr)
+        end_time = librosa.frames_to_time(beat + 1, sr=sr)
+        note_number = int(librosa.hz_to_midi(librosa.note_to_hz('C4')))  # Default note
+        note = pretty_midi.Note(
+            velocity=100, pitch=note_number, start=start_time, end=end_time
+        )
+        instrument.notes.append(note)
+
+    midi.instruments.append(instrument)
+    midi.write(midi_path)
+
+mp3_path = 'path/to/your/file.mp3'  # Change this to your MP3 file path
+wav_path = 'path/to/your/file.wav'  # Change this to your desired WAV file path
+midi_path = 'path/to/your/file.mid'  # Change this to your desired MIDI file path
+
+convert_mp3_to_wav(mp3_path, wav_path)
+transcribe_audio_to_midi(wav_path, midi_path)

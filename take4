@@ -1,0 +1,104 @@
+import os
+import pretty_midi
+
+# Function to create an enhanced drum track
+def create_drum_track():
+    drum_program = pretty_midi.instrument_name_to_program('Acoustic Grand Piano')  # Use a valid instrument name, then set is_drum=True
+    drum_instrument = pretty_midi.Instrument(program=drum_program, is_drum=True)  # Set is_drum to True
+
+    # Enhanced drum pattern: Kick, Snare, Hi-hat, and additional elements
+    kick = [36]  # MIDI note number for bass drum (kick)
+    snare = [38]  # MIDI note number for snare drum
+    hihat_closed = [42]  # MIDI note number for closed hi-hat
+    hihat_open = [46]  # MIDI note number for open hi-hat
+    crash = [49]  # MIDI note number for crash cymbal
+
+    # Create drum pattern
+    for i in range(16):
+        start_time = i * 0.25  # Each beat is 0.25 seconds apart
+        if i % 4 == 0:  # Kick on every beat
+            drum_instrument.notes.append(pretty_midi.Note(velocity=100, pitch=kick[0], start=start_time, end=start_time + 0.1))
+        if i % 4 == 2:  # Snare on every other beat
+            drum_instrument.notes.append(pretty_midi.Note(velocity=100, pitch=snare[0], start=start_time, end=start_time + 0.1))
+        if i % 2 == 0:  # Hi-hat on every off-beat
+            drum_instrument.notes.append(pretty_midi.Note(velocity=80, pitch=hihat_closed[0], start=start_time, end=start_time + 0.1))
+        if i == 15:  # Crash cymbal at the end of the loop
+            drum_instrument.notes.append(pretty_midi.Note(velocity=120, pitch=crash[0], start=start_time, end=start_time + 0.1))
+        if i % 8 == 6:  # Open hi-hat occasionally
+            drum_instrument.notes.append(pretty_midi.Note(velocity=90, pitch=hihat_open[0], start=start_time, end=start_time + 0.1))
+
+    return drum_instrument
+
+# Function to create an enhanced bassline
+def create_bass_track():
+    bass_program = pretty_midi.instrument_name_to_program('Electric Bass (finger)')
+    bass_instrument = pretty_midi.Instrument(program=bass_program)
+
+    # Enhanced bassline pattern
+    bass_notes = [40, 43, 45, 47, 48, 47, 45, 43]  # MIDI note numbers for the bassline
+
+    for i, note in enumerate(bass_notes):
+        start_time = i * 0.5  # Each note is 0.5 seconds apart
+        bass_instrument.notes.append(pretty_midi.Note(velocity=100, pitch=note, start=start_time, end=start_time + 0.4))
+
+    return bass_instrument
+
+# Function to create an enhanced melody
+def create_melody_track():
+    melody_program = pretty_midi.instrument_name_to_program('Acoustic Grand Piano')
+    melody_instrument = pretty_midi.Instrument(program=melody_program)
+
+    # Enhanced melody pattern with harmony
+    melody_notes = [(60, 64), (62, 65), (64, 67), (65, 69), (67, 71), (69, 72), (71, 74), (72, 76)]  # MIDI note numbers for the melody and harmony
+
+    for i, (note1, note2) in enumerate(melody_notes):
+        start_time = i * 0.5  # Each note is 0.5 seconds apart
+        melody_instrument.notes.append(pretty_midi.Note(velocity=100, pitch=note1, start=start_time, end=start_time + 0.4))
+        melody_instrument.notes.append(pretty_midi.Note(velocity=100, pitch=note2, start=start_time, end=start_time + 0.4))
+
+    return melody_instrument
+
+# Function to create a simple chord track for harmony
+def create_chord_track():
+    chord_program = pretty_midi.instrument_name_to_program('Electric Piano 1')
+    chord_instrument = pretty_midi.Instrument(program=chord_program)
+
+    # Simple chord progression
+    chords = [
+        [60, 64, 67],  # C Major
+        [62, 65, 69],  # D Minor
+        [64, 67, 71],  # E Minor
+        [65, 69, 72]   # F Major
+    ]
+
+    for i, chord in enumerate(chords):
+        start_time = i * 2.0  # Each chord lasts 2 seconds
+        for note in chord:
+            chord_instrument.notes.append(pretty_midi.Note(velocity=100, pitch=note, start=start_time, end=start_time + 2.0))
+
+    return chord_instrument
+
+# Create a PrettyMIDI object
+midi = pretty_midi.PrettyMIDI()
+
+# Add the drum track
+drum_track = create_drum_track()
+midi.instruments.append(drum_track)
+
+# Add the bass track
+bass_track = create_bass_track()
+midi.instruments.append(bass_track)
+
+# Add the melody track
+melody_track = create_melody_track()
+midi.instruments.append(melody_track)
+
+# Add the chord track
+chord_track = create_chord_track()
+midi.instruments.append(chord_track)
+
+# Save the MIDI file to the Downloads folder
+downloads_path = os.path.expanduser('~/Downloads/enhanced_bop.mid')
+midi.write(downloads_path)
+
+print(f'MIDI file created: {downloads_path}')
